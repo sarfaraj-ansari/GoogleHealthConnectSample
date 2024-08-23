@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:background="@color/white"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".ui.MainActivity">
+
+    <EditText
+        android:id="@+id/edtInsertHeartRate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="Enter heart rate per minute"
+        android:gravity="center"
+        android:layout_gravity="center_horizontal"
+        android:textColor="@color/black"
+        android:textColorHint="@color/black"
+        android:textSize="15sp"
+        android:inputType="phone"
+
+        android:layout_marginTop="15dp"
+
+        />
+
+    <Button
+        android:id="@+id/insertHeartRate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Insert Heart Rate"
+
+        android:layout_marginTop="5dp"
+        />
+
+    <EditText
+        android:id="@+id/edtInsertExercise"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="Enter exercise time in minute"
+        android:gravity="center"
+        android:layout_gravity="center_horizontal"
+        android:textColor="@color/black"
+        android:textColorHint="@color/black"
+        android:textSize="15sp"
+        android:inputType="phone"
+
+        android:layout_marginTop="15dp"
+
+        />
+
+    <Button
+        android:id="@+id/insertExercise"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Insert Exercise"
+
+        android:layout_marginTop="5dp"
+        />
+
+    <EditText
+        android:id="@+id/edtInsertSteps"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="Enter Steps Count for in minutes"
+        android:gravity="center"
+        android:layout_gravity="center_horizontal"
+        android:textColor="@color/black"
+        android:textColorHint="@color/black"
+        android:textSize="15sp"
+        android:inputType="phone"
+
+        android:layout_marginTop="15dp"
+
+        />
+
+
+    <Button
+        android:id="@+id/insertSteps"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Insert Steps"
+
+        android:layout_marginTop="15dp"
+        />
+
+    <Button
+        android:id="@+id/readHeart"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Read Heartbeats Data"
+
+        android:layout_marginTop="15dp"
+        />
+
+    <Button
+        android:id="@+id/readExercise"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Read Exercise Data"
+
+        android:layout_marginTop="15dp"
+        />
+
+    <Button
+        android:id="@+id/readSteps"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Read Steps Data"
+
+        android:layout_marginTop="15dp"
+        />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        >
+
+        <TextView
+            android:id="@+id/result"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:textSize="18sp"
+            android:textColor="@color/black"
+            android:text="See result here...."
+
+
+            android:layout_margin="25dp"
+            />
+
+    </ScrollView>
+
+
+
+
+</LinearLayout>

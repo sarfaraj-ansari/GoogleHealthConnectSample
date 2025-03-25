@@ -7,21 +7,18 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.StepsRecord
 import com.example.googlehealthconnectdemo.R
 import com.example.googlehealthconnectdemo.utils.HealthConnectProvider
-import com.example.googlehealthconnectdemo.utils.HealthConnectProvider.healthConnectClient
-import com.example.googlehealthconnectdemo.utils.HealthConnectProvider.isHealthConnectInitialized
-import com.example.googlehealthconnectdemo.utils.buildHeartRateSeries
+import com.example.googlehealthconnectdemo.utils.HealthConnectProviderContract
 import com.example.googlehealthconnectdemo.utils.hasAllPermissions
 import com.example.googlehealthconnectdemo.utils.isHealthConnectSupported
 import com.example.googlehealthconnectdemo.utils.permissions
-import com.example.googlehealthconnectdemo.utils.readSessionRecord
 import com.example.googlehealthconnectdemo.utils.requestPermissionsActivityContract
-import com.example.googlehealthconnectdemo.utils.writeSessionToConnect
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -44,6 +41,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var etHeart: EditText
     private lateinit var etExercise: EditText
 
+    private var healthConnectProvider: HealthConnectProviderContract? = null
+    private var healthConnectClient: HealthConnectClient? = null
+
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,6 +60,9 @@ class MainActivity : AppCompatActivity() {
         etExercise = findViewById(R.id.edtInsertExercise)
         etHeart = findViewById(R.id.edtInsertHeartRate)
 
+        healthConnectProvider = HealthConnectProvider()
+        healthConnectClient = healthConnectProvider?.getHealthConnectClient(this)
+
         readExerciseButton.setOnClickListener { readExerciseData() }
 
         readHeartButton.setOnClickListener { readHeartData() }
@@ -69,7 +72,7 @@ class MainActivity : AppCompatActivity() {
         insertHeartButton.setOnClickListener {
             val start = ZonedDateTime.now()
             val end = ZonedDateTime.now()
-            if(etHeart.text.isNotEmpty()) {
+            if (etHeart.text.isNotEmpty()) {
                 insertHeartRateRecord(start.minusMinutes(1), end)
             } else {
                 Toast.makeText(this, "Please enter heartbeat count", Toast.LENGTH_SHORT).show()
@@ -80,8 +83,11 @@ class MainActivity : AppCompatActivity() {
         insertExercise.setOnClickListener {
             val start = ZonedDateTime.now()
             val end = ZonedDateTime.now()
-            if(etExercise.text.isNotEmpty()) {
-                insertExerciseSessionRecord(start.minusMinutes(etExercise.text.toString().toLong()), end)
+            if (etExercise.text.isNotEmpty()) {
+                insertExerciseSessionRecord(
+                    start.minusMinutes(etExercise.text.toString().toLong()),
+                    end
+                )
             } else {
                 Toast.makeText(this, "Please enter exercise time", Toast.LENGTH_SHORT).show()
             }
@@ -91,14 +97,13 @@ class MainActivity : AppCompatActivity() {
             val start = ZonedDateTime.now()
             val end = ZonedDateTime.now()
 
-            if(etSteps.text.isNotEmpty()) {
+            if (etSteps.text.isNotEmpty()) {
                 insertStepsRecord(start.minusMinutes(10), end, etSteps.text.toString().toLong())
             } else {
                 Toast.makeText(this, "Please enter step count", Toast.LENGTH_SHORT).show()
             }
 
         }
-
 
 
     }
@@ -123,16 +128,14 @@ class MainActivity : AppCompatActivity() {
     private fun readHeartData() {
 
         if (isHealthConnectSupported()) {
-            if (!isHealthConnectInitialized) {
-                HealthConnectProvider.initializeHealthConnect(this)
-            }
 
             CoroutineScope(Dispatchers.Unconfined).launch {
-                if (hasAllPermissions()) {
+                if (hasAllPermissions(healthConnectClient!!)) {
                     println("All permissions are available and reading begins")
 
-                    val listOfRecords = readSessionRecord<HeartRateRecord>(
+                    val listOfRecords = healthConnectProvider?.readSessionRecord(
                         healthConnectClient!!,
+                        HeartRateRecord::class,
                         ZonedDateTime.now().minusHours(2),
                         ZonedDateTime.now()
                     )
@@ -163,16 +166,14 @@ class MainActivity : AppCompatActivity() {
     private fun readStepsData() {
 
         if (isHealthConnectSupported()) {
-            if (!isHealthConnectInitialized) {
-                HealthConnectProvider.initializeHealthConnect(this)
-            }
 
             CoroutineScope(Dispatchers.Unconfined).launch {
-                if (hasAllPermissions()) {
+                if (hasAllPermissions(healthConnectClient!!)) {
                     println("All permissions are available and reading begins")
 
-                    val listOfRecords = readSessionRecord<StepsRecord>(
+                    val listOfRecords = healthConnectProvider?.readSessionRecord(
                         healthConnectClient!!,
+                        StepsRecord::class,
                         ZonedDateTime.now().minusHours(2),
                         ZonedDateTime.now()
                     )
@@ -199,15 +200,14 @@ class MainActivity : AppCompatActivity() {
     private fun readExerciseData() {
 
         if (isHealthConnectSupported()) {
-            if (!isHealthConnectInitialized) {
-                HealthConnectProvider.initializeHealthConnect(this)
-            }
+
             CoroutineScope(Dispatchers.Unconfined).launch {
-                if (hasAllPermissions()) {
+                if (hasAllPermissions(healthConnectClient!!)) {
                     println("All permissions are available and reading begins")
 
-                    val listOfRecords = readSessionRecord<ExerciseSessionRecord>(
+                    val listOfRecords = healthConnectProvider?.readSessionRecord(
                         healthConnectClient!!,
+                        ExerciseSessionRecord::class,
                         ZonedDateTime.now().minusHours(2),
                         ZonedDateTime.now()
                     )
@@ -218,7 +218,13 @@ class MainActivity : AppCompatActivity() {
                             println("record------> ${i.exerciseType}")
                             val duration = Duration.between(i.startTime, i.endTime)
                             //stringBuilder.append("exercise duration:- ${duration.toHours()}.${duration.toMinutes()} hour,\nTitle:- ${i.title}, exerciseType: ${i.exerciseType}, laps: ${i.laps}, notes: ${i.notes}, exerciseRouteResult: ${i.exerciseRouteResult}\n\n")
-                            stringBuilder.append("Exercise duration:- ${duration.toHours()}.${duration.toMinutes()} hour,\nStart time:- ${getTimeFromInstant(i.startTime)},\nEnd time:- ${getTimeFromInstant(i.endTime)},\nTitle:- ${i.title}\n\n")
+                            stringBuilder.append(
+                                "Exercise duration:- ${duration.toHours()}.${duration.toMinutes()} hour,\nStart time:- ${
+                                    getTimeFromInstant(
+                                        i.startTime
+                                    )
+                                },\nEnd time:- ${getTimeFromInstant(i.endTime)},\nTitle:- ${i.title}\n\n"
+                            )
                         }
                         runOnUiThread { textView.text = stringBuilder }
                     } else {
@@ -237,15 +243,19 @@ class MainActivity : AppCompatActivity() {
     private fun insertHeartRateRecord(start: ZonedDateTime, end: ZonedDateTime) {
 
         if (isHealthConnectSupported()) {
-            if (!isHealthConnectInitialized) {
-                HealthConnectProvider.initializeHealthConnect(this)
-            }
+
             CoroutineScope(Dispatchers.Unconfined).launch {
-                if (hasAllPermissions()) {
+                if (hasAllPermissions(healthConnectClient!!)) {
                     println("All permissions are available and inserting begins")
-                    writeSessionToConnect(
+                    healthConnectProvider?.writeSessionToConnect(
                         healthConnectClient!!,
-                        listOf(buildHeartRateSeries(start, end, etHeart.text.toString().toLong()))
+                        listOf(
+                            healthConnectProvider!!.buildHeartRateSeries(
+                                start,
+                                end,
+                                etHeart.text.toString().toLong()
+                            )
+                        )
                     )
                     runOnUiThread { textView.text = "Heart rate inserted" }
                 } else {
@@ -259,13 +269,11 @@ class MainActivity : AppCompatActivity() {
     private fun insertExerciseSessionRecord(start: ZonedDateTime, end: ZonedDateTime) {
 
         if (isHealthConnectSupported()) {
-            if (!isHealthConnectInitialized) {
-                HealthConnectProvider.initializeHealthConnect(this)
-            }
+
             CoroutineScope(Dispatchers.Unconfined).launch {
-                if (hasAllPermissions()) {
+                if (hasAllPermissions(healthConnectClient!!)) {
                     println("All permissions are available and inserting begins")
-                    writeSessionToConnect(
+                    healthConnectProvider?.writeSessionToConnect(
                         healthConnectClient!!,
                         listOf(
                             ExerciseSessionRecord(
@@ -290,13 +298,11 @@ class MainActivity : AppCompatActivity() {
     private fun insertStepsRecord(start: ZonedDateTime, end: ZonedDateTime, noOfSteps: Long) {
 
         if (isHealthConnectSupported()) {
-            if (!isHealthConnectInitialized) {
-                HealthConnectProvider.initializeHealthConnect(this)
-            }
+
             CoroutineScope(Dispatchers.Unconfined).launch {
-                if (hasAllPermissions()) {
+                if (hasAllPermissions(healthConnectClient!!)) {
                     println("All permissions are available and inserting begins")
-                    writeSessionToConnect(
+                    healthConnectProvider?.writeSessionToConnect(
                         healthConnectClient!!,
                         listOf(
                             StepsRecord(
@@ -335,7 +341,7 @@ class MainActivity : AppCompatActivity() {
                 endZoneOffset = end.offset,
                 count = (1000 + 1000 * Random.nextInt(3)).toLong()
             )
-        ) + buildHeartRateSeries(start, end, 10)
+        ) + healthConnectProvider!!.buildHeartRateSeries(start, end, 10)
 
         return records;
 

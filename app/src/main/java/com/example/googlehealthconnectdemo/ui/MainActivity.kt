@@ -1,6 +1,8 @@
 package com.example.googlehealthconnectdemo.ui
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
@@ -21,6 +23,7 @@ import com.example.googlehealthconnectdemo.utils.permissions
 import com.example.googlehealthconnectdemo.utils.requestPermissionsActivityContract
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.Instant
@@ -28,6 +31,8 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.seconds
+import androidx.core.net.toUri
 
 class MainActivity : AppCompatActivity() {
     private lateinit var insertHeartButton: Button
@@ -40,6 +45,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var etSteps: EditText
     private lateinit var etHeart: EditText
     private lateinit var etExercise: EditText
+
+    @Volatile
+    private var isPermissionPopupVisible = false
 
     private var healthConnectProvider: HealthConnectProviderContract? = null
     private var healthConnectClient: HealthConnectClient? = null
@@ -317,6 +325,25 @@ class MainActivity : AppCompatActivity() {
                     runOnUiThread { textView.text = "Steps Record inserted" }
                 } else {
                     requestPermissions.launch(permissions)
+                    CoroutineScope(Dispatchers.Default).launch {
+                        delay(1.seconds)
+
+                        if (!isPermissionPopupVisible) {
+                            try {
+                                val intent = Intent()
+                                intent.setAction("androidx.health.ACTION_HEALTH_CONNECT_SETTINGS")
+                                startActivity(intent)
+                            } catch (e: Exception) {
+                                val playStoreIntent = Intent(Intent.ACTION_VIEW)
+                                    .setData("market://details?id=com.google.android.apps.healthdata".toUri());
+                                startActivity(playStoreIntent)
+
+                            }
+                        }
+
+
+                        isPermissionPopupVisible = false
+                    }
                 }
             }
         }
@@ -359,4 +386,10 @@ class MainActivity : AppCompatActivity() {
         val formattedTime: String = zonedDateTime.format(formatter)
         return formattedTime
     }
+
+    override fun onStop() {
+        super.onStop()
+        isPermissionPopupVisible = true
+    }
+
 }

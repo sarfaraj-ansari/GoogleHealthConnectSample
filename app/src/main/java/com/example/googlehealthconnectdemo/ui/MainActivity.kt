@@ -33,6 +33,7 @@ import java.time.format.DateTimeFormatter
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 import androidx.core.net.toUri
+import androidx.lifecycle.lifecycleScope
 
 class MainActivity : AppCompatActivity() {
     private lateinit var insertHeartButton: Button
@@ -120,14 +121,12 @@ class MainActivity : AppCompatActivity() {
         registerForActivityResult(requestPermissionsActivityContract) { granted ->
             if (granted.containsAll(permissions)) {
                 println("All permission granted and inserting begins")
-                /*
-                CoroutineScope(Dispatchers.Unconfined).launch {
+                /*lifecycleScope.launch(Dispatchers.IO) {
                     writeSessionToConnect(
                         healthConnectClient!!,
                         getExerciseData(_start, _end.minusHours(1))
                     )
-                }
-                */
+                }*/
             } else {
                 println("All permission required")
             }
@@ -137,7 +136,7 @@ class MainActivity : AppCompatActivity() {
 
         if (isHealthConnectSupported()) {
 
-            CoroutineScope(Dispatchers.Unconfined).launch {
+            lifecycleScope.launch(Dispatchers.IO) {
                 if (hasAllPermissions(healthConnectClient!!)) {
                     println("All permissions are available and reading begins")
 
@@ -175,7 +174,7 @@ class MainActivity : AppCompatActivity() {
 
         if (isHealthConnectSupported()) {
 
-            CoroutineScope(Dispatchers.Unconfined).launch {
+            lifecycleScope.launch(Dispatchers.IO) {
                 if (hasAllPermissions(healthConnectClient!!)) {
                     println("All permissions are available and reading begins")
 
@@ -209,7 +208,7 @@ class MainActivity : AppCompatActivity() {
 
         if (isHealthConnectSupported()) {
 
-            CoroutineScope(Dispatchers.Unconfined).launch {
+            lifecycleScope.launch(Dispatchers.IO) {
                 if (hasAllPermissions(healthConnectClient!!)) {
                     println("All permissions are available and reading begins")
 
@@ -252,7 +251,7 @@ class MainActivity : AppCompatActivity() {
 
         if (isHealthConnectSupported()) {
 
-            CoroutineScope(Dispatchers.Unconfined).launch {
+            lifecycleScope.launch(Dispatchers.IO) {
                 if (hasAllPermissions(healthConnectClient!!)) {
                     println("All permissions are available and inserting begins")
                     healthConnectProvider?.writeSessionToConnect(
@@ -278,7 +277,7 @@ class MainActivity : AppCompatActivity() {
 
         if (isHealthConnectSupported()) {
 
-            CoroutineScope(Dispatchers.Unconfined).launch {
+            lifecycleScope.launch(Dispatchers.IO) {
                 if (hasAllPermissions(healthConnectClient!!)) {
                     println("All permissions are available and inserting begins")
                     healthConnectProvider?.writeSessionToConnect(
@@ -307,7 +306,7 @@ class MainActivity : AppCompatActivity() {
 
         if (isHealthConnectSupported()) {
 
-            CoroutineScope(Dispatchers.Unconfined).launch {
+            lifecycleScope.launch(Dispatchers.IO) {
                 if (hasAllPermissions(healthConnectClient!!)) {
                     println("All permissions are available and inserting begins")
                     healthConnectProvider?.writeSessionToConnect(
